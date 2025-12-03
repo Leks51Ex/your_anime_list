@@ -159,6 +159,10 @@ class _AddItemDialogState extends State<_AddItemDialog> {
     Colors.purple,
     Colors.teal,
     Colors.brown,
+    Colors.black,
+    Colors.white,
+    Colors.amber,
+    Colors.indigo,
   ];
 
   @override
@@ -191,6 +195,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
           const Text('Цвет'),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
             children: colors
                 .map(
                   (c) => GestureDetector(
