@@ -1,49 +1,32 @@
 import 'package:flutter/material.dart';
 
-class ListPage extends StatelessWidget {
+class ListPage extends StatefulWidget {
   final Function(String) onSelect;
 
-  ListPage({super.key, required this.onSelect});
+  const ListPage({super.key, required this.onSelect});
 
-  final List<String> oursLists = [
-    'Книги',
-    'Фильмы',
-    'Аниме',
-    'Сериалы',
-    'Презервативы',
+  @override
+  State<ListPage> createState() => _ListPageState();
+}
+
+class _ListPageState extends State<ListPage> {
+  final List<_CustomItem> items = [
+    _CustomItem('Книги', Icons.menu_book_rounded, Colors.indigo),
+    _CustomItem('Фильмы', Icons.movie_rounded, Colors.redAccent),
+    _CustomItem('Аниме', Icons.animation_rounded, Colors.purple),
+    _CustomItem('Сериалы', Icons.tv_rounded, Colors.teal),
+    _CustomItem('Презервативы', Icons.favorite_rounded, Colors.pinkAccent),
+    _CustomItem('Поездки', Icons.travel_explore, Colors.lightGreen),
   ];
 
-  IconData _getIcon(String title) {
-    switch (title) {
-      case 'Книги':
-        return Icons.menu_book_rounded;
-      case 'Фильмы':
-        return Icons.movie_rounded;
-      case 'Аниме':
-        return Icons.animation_rounded;
-      case 'Сериалы':
-        return Icons.tv_rounded;
-      case 'Презервативы':
-        return Icons.favorite_rounded;
-      default:
-        return Icons.list_rounded;
-    }
-  }
+  void _addNewItem() async {
+    final result = await showDialog<_CustomItem>(
+      context: context,
+      builder: (context) => _AddItemDialog(),
+    );
 
-  Color _getColor(String title) {
-    switch (title) {
-      case 'Книги':
-        return Colors.indigo;
-      case 'Фильмы':
-        return Colors.redAccent;
-      case 'Аниме':
-        return Colors.purple;
-      case 'Сериалы':
-        return Colors.teal;
-      case 'Презервативы':
-        return Colors.pinkAccent;
-      default:
-        return Colors.blueGrey;
+    if (result != null) {
+      setState(() => items.add(result));
     }
   }
 
@@ -74,27 +57,24 @@ class ListPage extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.add_circle_rounded, size: 50),
                     color: Colors.lightBlue,
-                    onPressed: () {
-                      print("Добавить новый список");
-                    },
+                    onPressed: _addNewItem,
                   ),
                 ],
               ),
               Expanded(
                 child: ListView.separated(
-                  itemCount: oursLists.length,
+                  itemCount: items.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (BuildContext context, int index) {
-                    final title = oursLists[index];
-                    final color = _getColor(title);
+                    final item = items[index];
 
                     return InkWell(
                       borderRadius: BorderRadius.circular(16),
-                      onTap: () => onSelect(title),
+                      onTap: () => widget.onSelect(item.title),
                       child: Card(
                         color: Colors.white.withOpacity(0.7),
                         elevation: 3,
-                        shadowColor: color.withOpacity(0.25),
+                        shadowColor: item.color.withOpacity(0.25),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -109,14 +89,14 @@ class ListPage extends StatelessWidget {
                                 height: 48,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: color.withOpacity(0.12),
+                                  color: item.color.withOpacity(0.12),
                                 ),
-                                child: Icon(_getIcon(title), color: color),
+                                child: Icon(item.icon, color: item.color),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Text(
-                                  title,
+                                  item.title,
                                   style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(fontWeight: FontWeight.w600),
                                 ),
@@ -137,6 +117,123 @@ class ListPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CustomItem {
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  _CustomItem(this.title, this.icon, this.color);
+}
+
+class _AddItemDialog extends StatefulWidget {
+  @override
+  State<_AddItemDialog> createState() => _AddItemDialogState();
+}
+
+class _AddItemDialogState extends State<_AddItemDialog> {
+  final TextEditingController _controller = TextEditingController();
+  IconData? _selectedIcon;
+  Color? _selectedColor;
+
+  final List<IconData> icons = [
+    Icons.list_rounded,
+    Icons.favorite,
+    Icons.star,
+    Icons.work,
+    Icons.home,
+    Icons.book,
+    Icons.movie,
+    Icons.pets,
+  ];
+
+  final List<Color> colors = [
+    Colors.red,
+    Colors.pink,
+    Colors.blue,
+    Colors.green,
+    Colors.orange,
+    Colors.purple,
+    Colors.teal,
+    Colors.brown,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Новый список'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _controller,
+            decoration: const InputDecoration(labelText: 'Название'),
+          ),
+          const SizedBox(height: 12),
+          const Text('Иконка'),
+          Wrap(
+            children: icons
+                .map(
+                  (e) => IconButton(
+                    icon: Icon(
+                      e,
+                      color: _selectedIcon == e ? Colors.blueAccent : null,
+                    ),
+                    onPressed: () => setState(() => _selectedIcon = e),
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 12),
+          const Text('Цвет'),
+          Wrap(
+            spacing: 8,
+            children: colors
+                .map(
+                  (c) => GestureDetector(
+                    onTap: () => setState(() => _selectedColor = c),
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: c,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          width: 2,
+                          color: _selectedColor == c
+                              ? Colors.black
+                              : Colors.transparent,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Отмена'),
+          onPressed: () => Navigator.pop(context),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_controller.text.isNotEmpty &&
+                _selectedIcon != null &&
+                _selectedColor != null) {
+              Navigator.pop(
+                context,
+                _CustomItem(_controller.text, _selectedIcon!, _selectedColor!),
+              );
+            }
+          },
+          child: const Text('Добавить'),
+        ),
+      ],
     );
   }
 }
