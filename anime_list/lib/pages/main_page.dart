@@ -22,7 +22,7 @@ class _MainPageState extends State<MainPage> {
   void onItemChange(int index) {
     setState(() {
       selectedIndex = index;
-      selectedList = null; // сброс при смене таба
+      selectedList = null; 
     });
   }
 
@@ -38,20 +38,16 @@ class _MainPageState extends State<MainPage> {
     if (selectedIndex == 0) {
       body = selectedList == null
           ? ListPage(onSelect: onListSelect)
-          : ConcreteList(
-              text: selectedList!,
-              onBack: () {
-                setState(() {
-                  selectedList = null;
-                });
-              },
-            );
+          : ConcreteList(text: selectedList!, onBack: () {
+              setState(() {
+                selectedList = null;
+              });
+            });
     } else {
       body = SettingsPage();
     }
 
     return Scaffold(
-      backgroundColor: Color(0xFFF5FBFB),
       body: Row(
         children: [
           NavigationDrawer(
