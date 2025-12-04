@@ -10,23 +10,23 @@ class ListPage extends StatefulWidget {
 }
 
 class _ListPageState extends State<ListPage> {
-  final List<_CustomItem> items = [
-    _CustomItem('Книги', Icons.menu_book_rounded, Colors.indigo),
-    _CustomItem('Фильмы', Icons.movie_rounded, Colors.redAccent),
-    _CustomItem('Аниме', Icons.animation_rounded, Colors.purple),
-    _CustomItem('Сериалы', Icons.tv_rounded, Colors.teal),
-    _CustomItem('Презервативы', Icons.favorite_rounded, Colors.pinkAccent),
-    _CustomItem('Поездки', Icons.travel_explore, Colors.lightGreen),
+  final List<_ListItem> oursLists = [
+    _ListItem('Книги', Icons.menu_book_rounded, Colors.indigo),
+    _ListItem('Фильмы', Icons.movie_rounded, Colors.redAccent),
+    _ListItem('Аниме', Icons.animation_rounded, Colors.purple),
+    _ListItem('Сериалы', Icons.tv_rounded, Colors.teal),
+    _ListItem('Презервативы', Icons.favorite_rounded, Colors.pinkAccent),
+    _ListItem('Поездки', Icons.travel_explore, Colors.lightGreen),
   ];
 
-  void _addNewItem() async {
-    final result = await showDialog<_CustomItem>(
+  void _addNewList() async {
+    final result = await showDialog<_ListItem>(
       context: context,
-      builder: (context) => _AddItemDialog(),
+      builder: (context) => _AddListDialog(),
     );
 
     if (result != null) {
-      setState(() => items.add(result));
+      setState(() => oursLists.add(result));
     }
   }
 
@@ -57,16 +57,16 @@ class _ListPageState extends State<ListPage> {
                   IconButton(
                     icon: const Icon(Icons.add_circle_rounded, size: 50),
                     color: Colors.lightBlue,
-                    onPressed: _addNewItem,
+                    onPressed: _addNewList,
                   ),
                 ],
               ),
               Expanded(
                 child: ListView.separated(
-                  itemCount: items.length,
+                  itemCount: oursLists.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (BuildContext context, int index) {
-                    final item = items[index];
+                    final item = oursLists[index];
 
                     return InkWell(
                       borderRadius: BorderRadius.circular(16),
@@ -121,20 +121,20 @@ class _ListPageState extends State<ListPage> {
   }
 }
 
-class _CustomItem {
+class _ListItem {
   final String title;
   final IconData icon;
   final Color color;
 
-  _CustomItem(this.title, this.icon, this.color);
+  _ListItem(this.title, this.icon, this.color);
 }
 
-class _AddItemDialog extends StatefulWidget {
+class _AddListDialog extends StatefulWidget {
   @override
-  State<_AddItemDialog> createState() => _AddItemDialogState();
+  State<_AddListDialog> createState() => _AddListDialogState();
 }
 
-class _AddItemDialogState extends State<_AddItemDialog> {
+class _AddListDialogState extends State<_AddListDialog> {
   final TextEditingController _controller = TextEditingController();
   IconData? _selectedIcon;
   Color? _selectedColor;
@@ -232,7 +232,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                 _selectedColor != null) {
               Navigator.pop(
                 context,
-                _CustomItem(_controller.text, _selectedIcon!, _selectedColor!),
+                _ListItem(_controller.text, _selectedIcon!, _selectedColor!),
               );
             }
           },
