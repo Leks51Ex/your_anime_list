@@ -73,9 +73,9 @@ class _ConcreteListState extends State<ConcreteList> {
       checkColor: Colors.white,
      fillColor: MaterialStateProperty.resolveWith<Color>((states) {
     if (states.contains(MaterialState.selected)) {
-      return Colors.green;  // зелёный, когда value == true
+      return Colors.green;  
     }
-    return Colors.white;      // обычный цвет при value == false
+    return Colors.white;     
   }),
       value: items[index].isChecked,
       onChanged: (bool? value) {
