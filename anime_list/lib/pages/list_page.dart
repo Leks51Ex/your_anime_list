@@ -1,7 +1,8 @@
+import 'package:anime_list/services/api_service.dart';
 import 'package:flutter/material.dart';
 
 class ListPage extends StatefulWidget {
-  final Function(String) onSelect;
+  final void Function(int id, String title) onSelect;
 
   const ListPage({super.key, required this.onSelect});
 
@@ -10,23 +11,72 @@ class ListPage extends StatefulWidget {
 }
 
 class _ListPageState extends State<ListPage> {
-  final List<_ListItem> oursLists = [
-    _ListItem('Книги', Icons.menu_book_rounded, Colors.indigo),
-    _ListItem('Фильмы', Icons.movie_rounded, Colors.redAccent),
-    _ListItem('Аниме', Icons.animation_rounded, Colors.purple),
-    _ListItem('Сериалы', Icons.tv_rounded, Colors.teal),
-    _ListItem('Презервативы', Icons.favorite_rounded, Colors.pinkAccent),
-    _ListItem('Поездки', Icons.travel_explore, Colors.lightGreen),
-  ];
+  final List<_ListItem> oursLists = [];
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLists();
+  }
+
+  Future<void> _loadLists() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final data = await ApiService.fetchLists();
+      oursLists
+        ..clear()
+        ..addAll(
+          data.map(
+            (l) => _ListItem(
+              id: l['id'] as int,
+              title: l['title'] as String,
+              icon: Icons.list_rounded,
+              color: Colors.indigo,
+            ),
+          ),
+        );
+    } catch (e) {
+      _error = 'Не удалось загрузить списки';
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   void _addNewList() async {
-    final result = await showDialog<_ListItem>(
+    final result = await showDialog<_NewListData>(
       context: context,
       builder: (context) => _AddListDialog(),
     );
 
     if (result != null) {
-      setState(() => oursLists.add(result));
+      try {
+        final created = await ApiService.createList(result.title);
+        setState(() {
+          oursLists.add(
+            _ListItem(
+              id: created['id'] as int,
+              title: created['title'] as String,
+              icon: result.icon,
+              color: result.color,
+            ),
+          );
+        });
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ошибка создания списка')),
+        );
+      }
     }
   }
 
@@ -62,56 +112,135 @@ class _ListPageState extends State<ListPage> {
                 ],
               ),
               Expanded(
-                child: ListView.separated(
-                  itemCount: oursLists.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (BuildContext context, int index) {
-                    final item = oursLists[index];
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _error != null
+                        ? Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(_error!),
+                                const SizedBox(height: 8),
+                                ElevatedButton(
+                                  onPressed: _loadLists,
+                                  child: const Text('Повторить'),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadLists,
+                            child: ListView.separated(
+                              itemCount: oursLists.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 12),
+                              itemBuilder: (BuildContext context, int index) {
+                                final item = oursLists[index];
 
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => widget.onSelect(item.title),
-                      child: Card(
-                        color: Colors.white.withOpacity(0.7),
-                        elevation: 3,
-                        shadowColor: item.color.withOpacity(0.25),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Container(
-                          height: 80,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          alignment: Alignment.center,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: item.color.withOpacity(0.12),
-                                ),
-                                child: Icon(item.icon, color: item.color),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Text(
-                                  item.title,
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                              Icon(
-                                Icons.chevron_right_rounded,
-                                color: Colors.grey.shade500,
-                              ),
-                            ],
+                                return InkWell(
+                                  borderRadius: BorderRadius.circular(16),
+                                  onTap: () =>
+                                      widget.onSelect(item.id, item.title),
+                                  child: Card(
+                                    color: Colors.white.withOpacity(0.7),
+                                    elevation: 3,
+                                    shadowColor:
+                                        item.color.withOpacity(0.25),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Container(
+                                      height: 80,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 48,
+                                            height: 48,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: item.color
+                                                  .withOpacity(0.12),
+                                            ),
+                                            child: Icon(item.icon,
+                                                color: item.color),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Text(
+                                              item.title,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleMedium
+                                                  ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w600),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.redAccent,
+                                            ),
+                                            onPressed: () async {
+                                              final confirm =
+                                                  await showDialog<bool>(
+                                                context: context,
+                                                builder: (ctx) => AlertDialog(
+                                                  title: const Text(
+                                                      'Удалить список?'),
+                                                  content: Text(
+                                                      '«${item.title}» и все его пункты будут удалены.'),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              ctx, false),
+                                                      child:
+                                                          const Text('Отмена'),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              ctx, true),
+                                                      child: const Text(
+                                                          'Удалить'),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+
+                                              if (confirm == true) {
+                                                try {
+                                                  await ApiService.deleteList(
+                                                      item.id);
+                                                  if (!mounted) return;
+                                                  setState(() {
+                                                    oursLists
+                                                        .removeAt(index);
+                                                  });
+                                                } catch (e) {
+                                                  if (!mounted) return;
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    const SnackBar(
+                                                        content: Text(
+                                                            'Ошибка удаления списка')),
+                                                  );
+                                                }
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
               ),
             ],
           ),
@@ -122,11 +251,29 @@ class _ListPageState extends State<ListPage> {
 }
 
 class _ListItem {
+  final int id;
   final String title;
   final IconData icon;
   final Color color;
 
-  _ListItem(this.title, this.icon, this.color);
+  _ListItem({
+    required this.id,
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
+}
+
+class _NewListData {
+  final String title;
+  final IconData icon;
+  final Color color;
+
+  _NewListData({
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
 }
 
 class _AddListDialog extends StatefulWidget {
@@ -232,7 +379,11 @@ class _AddListDialogState extends State<_AddListDialog> {
                 _selectedColor != null) {
               Navigator.pop(
                 context,
-                _ListItem(_controller.text, _selectedIcon!, _selectedColor!),
+                _NewListData(
+                  title: _controller.text,
+                  icon: _selectedIcon!,
+                  color: _selectedColor!,
+                ),
               );
             }
           },

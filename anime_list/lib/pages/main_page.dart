@@ -3,11 +3,6 @@ import 'package:anime_list/pages/list_page.dart';
 import 'package:anime_list/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 
-// main_page.dart
-import 'package:anime_list/pages/list_page.dart';
-import 'package:anime_list/pages/settings_page.dart';
-import 'package:flutter/material.dart';
-
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -17,44 +12,94 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int selectedIndex = 0;
-  String? selectedList;
+  int? selectedListId;
+  String? selectedListTitle;
 
   void onItemChange(int index) {
     setState(() {
       selectedIndex = index;
-      selectedList = null; 
+      selectedListId = null;
+      selectedListTitle = null;
     });
   }
 
-  void onListSelect(String text) {
+  void onListSelect(int id, String title) {
     setState(() {
-      selectedList = text;
+      selectedListId = id;
+      selectedListTitle = title;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
     Widget body;
     if (selectedIndex == 0) {
-      body = selectedList == null
+      body = selectedListId == null
           ? ListPage(onSelect: onListSelect)
-          : ConcreteList(text: selectedList!, onBack: () {
-              setState(() {
-                selectedList = null;
-              });
-            });
+          : ConcreteList(
+              listId: selectedListId!,
+              text: selectedListTitle ?? '',
+              onBack: () {
+                setState(() {
+                  selectedListId = null;
+                  selectedListTitle = null;
+                });
+              },
+            );
     } else {
-      body = SettingsPage();
+      body = const SettingsPage();
     }
 
+    // смартфоны / узкие экраны
+    if (width < 600) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(
+            selectedIndex == 0
+                ? (selectedListTitle ?? 'Наши крутые списочки')
+                : 'Настройки',
+          ),
+          leading: selectedListId != null
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    setState(() {
+                      selectedListId = null;
+                      selectedListTitle = null;
+                    });
+                  },
+                )
+              : null,
+        ),
+        body: body,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: onItemChange,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.list_alt),
+              label: 'Списочки',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings),
+              label: 'Настройки',
+            ),
+          ],
+        ),
+      );
+    }
+
+    // планшеты / десктоп — старый layout с NavigationDrawer
     return Scaffold(
       body: Row(
         children: [
           NavigationDrawer(
             selectedIndex: selectedIndex,
             onDestinationSelected: onItemChange,
-            children: [
-              Container(
+            children: const [
+              SizedBox(
                 height: 80,
                 child: DrawerHeader(child: Text('Наши крутые списочки')),
               ),
