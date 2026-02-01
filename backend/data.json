@@ -1,25 +1,24 @@
 {
   "lists": [
     {
-      "id": 1769797850483,
-      "title": "test",
+      "id": 1769960080807,
+      "title": "Test9",
+      "icon": "star",
+      "color": 4294940672,
+      "items": []
+    },
+    {
+      "id": 1769960091675,
+      "title": "Test6",
+      "icon": "book",
+      "color": 4288423856,
       "items": [
         {
-          "id": 1769797872477,
-          "title": "test!",
+          "id": 1769960105412,
+          "title": "heyyyy",
           "isChecked": true
         }
       ]
-    },
-    {
-      "id": 1769959199930,
-      "title": "new list",
-      "items": []
-    },
-    {
-      "id": 1769959206799,
-      "title": "sdfsfdsdf",
-      "items": []
     }
   ]
 }

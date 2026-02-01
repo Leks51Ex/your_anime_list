@@ -19,26 +19,32 @@ class ApiService {
   }
 
   /// Создать новый список и вернуть его JSON
-  static Future<Map<String, dynamic>> createList(String title) async {
-    final uri = Uri.parse('$baseUrl/lists');
-    final id = DateTime.now().millisecondsSinceEpoch;
+  static Future<Map<String, dynamic>> createList({
+  required String title,
+  required String icon,
+  required int color,
+}) async {
+  final uri = Uri.parse('$baseUrl/lists');
+  final id = DateTime.now().millisecondsSinceEpoch;
 
-    final response = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'id': id,
-        'title': title,
-        'items': <dynamic>[],
-      }),
-    );
+  final response = await http.post(
+    uri,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'id': id,
+      'title': title,
+      'icon': icon,
+      'color': color,
+      'items': [],
+    }),
+  );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
-    }
-
-    throw Exception('Ошибка создания списка: ${response.statusCode}');
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
   }
+
+  throw Exception('Ошибка создания списка');
+}
 
   /// Удалить список по id
   static Future<void> deleteList(int id) async {

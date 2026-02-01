@@ -29,17 +29,30 @@ class Item(BaseModel):
 
 
 class ListModel(BaseModel):
-  id: int
-  title: str
-  items: List[Item] = []
+    id: int
+    title: str
+    icon: str
+    color: int
+    items: List[Item] = []
+
+
+from typing import Optional
 
 class ListUpdate(BaseModel):
-    title: str
+    title: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[int] = None
 
 def load_data():
-  if not DATA_FILE.exists():
-    return {"lists": []}
-  return json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    if not DATA_FILE.exists():
+        return {"lists": []}
+
+    text = DATA_FILE.read_text(encoding="utf-8").strip()
+    if not text:
+        return {"lists": []}
+
+    return json.loads(text)
+
 
 
 def save_data(data):
@@ -105,11 +118,18 @@ def update_list(list_id: int, payload: ListUpdate):
 
     for l in data["lists"]:
         if l["id"] == list_id:
-            l["title"] = payload.title
+            if payload.title is not None:
+                l["title"] = payload.title
+            if payload.icon is not None:
+                l["icon"] = payload.icon
+            if payload.color is not None:
+                l["color"] = payload.color
+
             save_data(data)
             return {"ok": True}
 
     raise HTTPException(status_code=404, detail="List not found")
+
 
 
 @app.delete("/lists/{list_id}/items/{item_id}")

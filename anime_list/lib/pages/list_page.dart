@@ -1,5 +1,43 @@
 import 'package:anime_list/services/api_service.dart';
 import 'package:flutter/material.dart';
+  
+  
+  IconData iconFromString(String name) {
+  switch (name) {
+    case 'favorite':
+      return Icons.favorite;
+    case 'star':
+      return Icons.star;
+    case 'work':
+      return Icons.work;
+    case 'home':
+      return Icons.home;
+    case 'book':
+      return Icons.book;
+    case 'movie':
+      return Icons.movie;
+    case 'pets':
+      return Icons.pets;
+    default:
+      return Icons.list_rounded;
+  }
+}
+
+
+String iconToString(IconData icon) {
+  if (icon == Icons.favorite) return 'favorite';
+  if (icon == Icons.star) return 'star';
+  if (icon == Icons.work) return 'work';
+  if (icon == Icons.home) return 'home';
+  if (icon == Icons.book) return 'book';
+  if (icon == Icons.movie) return 'movie';
+  if (icon == Icons.pets) return 'pets';
+  return 'list_rounded';
+}
+
+
+
+
 
 class ListPage extends StatefulWidget {
   final void Function(int id, String title) onSelect;
@@ -34,11 +72,11 @@ class _ListPageState extends State<ListPage> {
         ..addAll(
           data.map(
             (l) => _ListItem(
-              id: l['id'] as int,
-              title: l['title'] as String,
-              icon: Icons.list_rounded,
-              color: Colors.indigo,
-            ),
+  id: l['id'],
+  title: l['title'],
+  icon: iconFromString(l['icon'] as String),
+  color: Color(l['color'] as int),
+)
           ),
         );
     } catch (e) {
@@ -80,33 +118,38 @@ class _ListPageState extends State<ListPage> {
 }
 
 
-  void _addNewList() async {
-    final result = await showDialog<_NewListData>(
-      context: context,
-      builder: (context) => _AddListDialog(),
-    );
+ void _addNewList() async {
+  final result = await showDialog<_NewListData>(
+    context: context,
+    builder: (context) => _AddListDialog(),
+  );
 
-    if (result != null) {
-      try {
-        final created = await ApiService.createList(result.title);
-        setState(() {
-          oursLists.add(
-            _ListItem(
-              id: created['id'] as int,
-              title: created['title'] as String,
-              icon: result.icon,
-              color: result.color,
-            ),
-          );
-        });
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ошибка создания списка')),
+  if (result != null) {
+    try {
+      final created = await ApiService.createList(
+        title: result.title,
+        icon: iconToString(result.icon),
+        color: result.color.value,
+      );
+
+      setState(() {
+        oursLists.add(
+          _ListItem(
+            id: created['id'] as int,
+            title: created['title'] as String,
+            icon: result.icon,
+            color: result.color,
+          ),
         );
-      }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ошибка создания списка')),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -341,6 +384,9 @@ class _AddListDialogState extends State<_AddListDialog> {
     Icons.movie,
     Icons.pets,
   ];
+
+
+
 
   final List<Color> colors = [
     Colors.red,
