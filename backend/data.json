@@ -1,24 +1,3 @@
 {
-  "lists": [
-    {
-      "id": 1769960080807,
-      "title": "Test9",
-      "icon": "star",
-      "color": 4294940672,
-      "items": []
-    },
-    {
-      "id": 1769960091675,
-      "title": "Test6",
-      "icon": "book",
-      "color": 4288423856,
-      "items": [
-        {
-          "id": 1769960105412,
-          "title": "heyyyy",
-          "isChecked": true
-        }
-      ]
-    }
-  ]
+  "lists": []
 }

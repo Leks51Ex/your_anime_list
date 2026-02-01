@@ -98,28 +98,31 @@ class ApiService {
   }
 
   /// Обновить пункт (например, галочку)
-  static Future<void> updateItem(
-    int listId,
-    int itemId, {
-    required String title,
-    required bool isChecked,
-  }) async {
-    final uri = Uri.parse('$baseUrl/lists/$listId/items/$itemId');
+ static Future<void> updateItem(
+  int listId,
+  int itemId, {
+  required String title,
+  required bool isChecked,
+  String comment = "",
+}) async {
+  final uri = Uri.parse('$baseUrl/lists/$listId/items/$itemId');
 
-    final response = await http.put(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'id': itemId,
-        'title': title,
-        'isChecked': isChecked,
-      }),
-    );
+  final response = await http.put(
+    uri,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      'id': itemId,
+      'title': title,
+      'isChecked': isChecked,
+      'comment': comment,
+    }),
+  );
 
-    if (response.statusCode != 200) {
-      throw Exception('Ошибка обновления пункта: ${response.statusCode}');
-    }
+  if (response.statusCode != 200) {
+    throw Exception('Ошибка обновления пункта: ${response.statusCode}');
   }
+}
+
 
 
   static Future<void> updateListTitle(int listId, String title) async {

@@ -19,13 +19,15 @@ app.add_middleware(
 )
 
 
-
+from pydantic import BaseModel, Field
+from typing import Optional
 
 
 class Item(BaseModel):
-  id: int
-  title: str
-  isChecked: bool
+    id: int
+    title: str
+    isChecked: bool
+    comment: str = "" 
 
 
 class ListModel(BaseModel):
@@ -99,16 +101,20 @@ def add_item(list_id: int, item: Item):
 
 
 @app.put("/lists/{list_id}/items/{item_id}")
+@app.put("/lists/{list_id}/items/{item_id}")
 def update_item(list_id: int, item_id: int, item: Item):
-  data = load_data()
-  for l in data["lists"]:
-    if l["id"] == list_id:
-      for i, it in enumerate(l["items"]):
-        if it["id"] == item_id:
-          l["items"][i] = item.dict()
-          save_data(data)
-          return {"ok": True}
-  raise HTTPException(status_code=404, detail="Item not found")
+    data = load_data()
+    for l in data["lists"]:
+        if l["id"] == list_id:
+            for i, it in enumerate(l["items"]):
+                if it["id"] == item_id:
+                    # Ограничение на длину комментария
+                    item.comment = item.comment[:40]
+                    l["items"][i] = item.dict()
+                    save_data(data)
+                    return {"ok": True}
+    raise HTTPException(status_code=404, detail="Item not found")
+
 
 
 

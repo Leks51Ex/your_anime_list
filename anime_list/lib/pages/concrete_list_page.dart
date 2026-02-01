@@ -37,16 +37,17 @@ class _ConcreteListState extends State<ConcreteList> {
     try {
       final data = await ApiService.fetchItems(widget.listId);
       items
-        ..clear()
-        ..addAll(
-          data.map(
-            (e) => _Item(
-              id: e['id'] as int,
-              title: e['title'] as String,
-              isChecked: e['isChecked'] as bool? ?? false,
-            ),
-          ),
-        );
+  ..clear()
+  ..addAll(
+    data.map(
+      (e) => _Item(
+        id: e['id'] as int,
+        title: e['title'] as String,
+        isChecked: e['isChecked'] as bool? ?? false,
+        comment: e['comment'] as String? ?? "",
+      ),
+    ),
+  );
     } catch (e) {
       _error = 'Не удалось загрузить пункты списка';
     } finally {
@@ -57,6 +58,38 @@ class _ConcreteListState extends State<ConcreteList> {
       }
     }
   }
+
+  Future<String?> showCommentDialog(BuildContext context, String initial) {
+  final controller = TextEditingController(text: initial);
+
+  return showDialog<String>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Комментарий'),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        maxLength: 40,
+        decoration: const InputDecoration(
+          hintText: 'До 40 символов',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Отмена'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context, controller.text.trim());
+          },
+          child: const Text('Сохранить'),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Future<String?> showEditDialog(
   BuildContext context,
@@ -172,8 +205,8 @@ class _ConcreteListState extends State<ConcreteList> {
                                 (BuildContext context, int index) {
                               final item = items[index];
 
-                              return ListTile(
-                                onLongPress: () async {
+                            return ListTile(
+                              onLongPress: () async {
   final newTitle = await showEditDialog(context, item.title);
   if (newTitle != null && newTitle.isNotEmpty) {
     await ApiService.updateItem(
@@ -188,74 +221,104 @@ class _ConcreteListState extends State<ConcreteList> {
     });
   }
 },
-                                title: Text(
-                                  item.title,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                          fontWeight: FontWeight.w500),
-                                ),
-                                leading: Checkbox(
-                                  checkColor: Colors.white,
-                                  fillColor: MaterialStateProperty
-                                      .resolveWith<Color>((states) {
-                                    if (states.contains(
-                                        MaterialState.selected)) {
-                                      return Colors.green;
-                                    }
-                                    return Colors.white;
-                                  }),
-                                  value: item.isChecked,
-                                  onChanged: (bool? value) async {
-                                    final newValue = value ?? false;
-                                    try {
-                                      await ApiService.updateItem(
-                                        widget.listId,
-                                        item.id,
-                                        title: item.title,
-                                        isChecked: newValue,
-                                      );
-                                      if (!mounted) return;
-                                      setState(() {
-                                        items[index] = item.copyWith(
-                                          isChecked: newValue,
-                                        );
-                                      });
-                                    } catch (e) {
-                                      if (!mounted) return;
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Ошибка обновления пункта')),
-                                      );
-                                    }
-                                  },
-                                ),
-                                trailing: IconButton(
-                                  color: Colors.redAccent,
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () async {
-                                    try {
-                                      await ApiService.deleteItem(
-                                          widget.listId, item.id);
-                                      if (!mounted) return;
-                                      setState(() {
-                                        items.removeAt(index);
-                                      });
-                                    } catch (e) {
-                                      if (!mounted) return;
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content: Text(
-                                                'Ошибка удаления пункта')),
-                                      );
-                                    }
-                                  },
-                                ),
-                              );
+  contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+  leading: Checkbox(
+    checkColor: Colors.white,
+    fillColor: MaterialStateProperty.resolveWith<Color>((states) {
+      if (states.contains(MaterialState.selected)) {
+        return Colors.green;
+      }
+      return Colors.white;
+    }),
+    value: item.isChecked,
+    onChanged: (bool? value) async {
+      final newValue = value ?? false;
+      try {
+        await ApiService.updateItem(
+          widget.listId,
+          item.id,
+          title: item.title,
+          isChecked: newValue,
+          comment: item.comment, // сохраняем комментарий
+        );
+        if (!mounted) return;
+        setState(() {
+          items[index] = item.copyWith(isChecked: newValue);
+        });
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ошибка обновления пункта')),
+        );
+      }
+    },
+  ),
+  title: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        item.title,
+        style: Theme.of(context)
+            .textTheme
+            .bodyLarge
+            ?.copyWith(fontWeight: FontWeight.w500),
+      ),
+      if (item.comment.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            item.comment,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Colors.grey[600]),
+          ),
+        ),
+    ],
+  ),
+  trailing: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      IconButton(
+        icon: const Icon(Icons.comment),
+        onPressed: () async {
+          final newComment = await showCommentDialog(context, item.comment);
+          if (newComment != null) {
+            await ApiService.updateItem(
+              widget.listId,
+              item.id,
+              title: item.title,
+              isChecked: item.isChecked,
+              comment: newComment,
+            );
+            setState(() {
+              items[index] = item.copyWith(comment: newComment);
+            });
+          }
+        },
+      ),
+      IconButton(
+        color: Colors.redAccent,
+        icon: const Icon(Icons.delete),
+        onPressed: () async {
+          try {
+            await ApiService.deleteItem(widget.listId, item.id);
+            if (!mounted) return;
+            setState(() {
+              items.removeAt(index);
+            });
+          } catch (e) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Ошибка удаления пункта')),
+            );
+          }
+        },
+      ),
+    ],
+  ),
+);
+
                             },
                             separatorBuilder: (_, __) =>
                                 const SizedBox(height: 10),
@@ -275,25 +338,30 @@ class _Item {
   final int id;
   final String title;
   final bool isChecked;
+  final String comment; // новое поле
 
   _Item({
     required this.id,
     required this.title,
     required this.isChecked,
+    this.comment = "",
   });
 
   _Item copyWith({
     int? id,
     String? title,
     bool? isChecked,
+    String? comment,
   }) {
     return _Item(
       id: id ?? this.id,
       title: title ?? this.title,
       isChecked: isChecked ?? this.isChecked,
+      comment: comment ?? this.comment,
     );
   }
 }
+
 
 class _NewItemData {
   final String title;
