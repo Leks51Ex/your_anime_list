@@ -1,20 +1,25 @@
 {
   "lists": [
     {
-      "id": 1769797689893,
-      "title": "кафе",
-      "items": []
-    },
-    {
       "id": 1769797850483,
-      "title": "sdjks",
+      "title": "test",
       "items": [
         {
           "id": 1769797872477,
-          "title": "sdasd",
+          "title": "test!",
           "isChecked": true
         }
       ]
+    },
+    {
+      "id": 1769959199930,
+      "title": "new list",
+      "items": []
+    },
+    {
+      "id": 1769959206799,
+      "title": "sdfsfdsdf",
+      "items": []
     }
   ]
 }

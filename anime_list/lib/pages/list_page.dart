@@ -52,6 +52,34 @@ class _ListPageState extends State<ListPage> {
     }
   }
 
+  Future<String?> showEditDialog(
+  BuildContext context,
+  String initial,
+) {
+  final controller = TextEditingController(text: initial);
+
+  return showDialog<String>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Изменить название'),
+      content: TextField(controller: controller),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Отмена'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context, controller.text.trim());
+          },
+          child: const Text('Сохранить'),
+        ),
+      ],
+    ),
+  );
+}
+
+
   void _addNewList() async {
     final result = await showDialog<_NewListData>(
       context: context,
@@ -233,6 +261,23 @@ class _ListPageState extends State<ListPage> {
                                               }
                                             },
                                           ),
+                                          IconButton(
+  icon: const Icon(Icons.edit),
+  onPressed: () async {
+    final newTitle = await showEditDialog(context, item.title);
+    if (newTitle != null && newTitle.isNotEmpty) {
+      await ApiService.updateListTitle(item.id, newTitle);
+      setState(() {
+        oursLists[index] = _ListItem(
+          id: item.id,
+          title: newTitle,
+          icon: item.icon,
+          color: item.color,
+        );
+      });
+    }
+  },
+),
                                         ],
                                       ),
                                     ),

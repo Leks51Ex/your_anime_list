@@ -115,6 +115,21 @@ class ApiService {
     }
   }
 
+
+  static Future<void> updateListTitle(int listId, String title) async {
+  final uri = Uri.parse('$baseUrl/lists/$listId');
+
+  final response = await http.put(
+    uri,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'title': title}),
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception('Ошибка обновления списка');
+  }
+}
+
   /// Удалить пункт из списка
   static Future<void> deleteItem(int listId, int itemId) async {
     final uri = Uri.parse('$baseUrl/lists/$listId/items/$itemId');

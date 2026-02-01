@@ -58,6 +58,38 @@ class _ConcreteListState extends State<ConcreteList> {
     }
   }
 
+  Future<String?> showEditDialog(
+  BuildContext context,
+  String initialText,
+) {
+  final controller = TextEditingController(text: initialText);
+
+  return showDialog<String>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Изменить пункт'),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Отмена'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final text = controller.text.trim();
+            Navigator.pop(context, text.isEmpty ? null : text);
+          },
+          child: const Text('Сохранить'),
+        ),
+      ],
+    ),
+  );
+}
+
+
   void _addNewItem() async {
     final result = await showDialog<_NewItemData>(
       context: context,
@@ -141,6 +173,21 @@ class _ConcreteListState extends State<ConcreteList> {
                               final item = items[index];
 
                               return ListTile(
+                                onLongPress: () async {
+  final newTitle = await showEditDialog(context, item.title);
+  if (newTitle != null && newTitle.isNotEmpty) {
+    await ApiService.updateItem(
+      widget.listId,
+      item.id,
+      title: newTitle,
+      isChecked: item.isChecked,
+    );
+
+    setState(() {
+      items[index] = item.copyWith(title: newTitle);
+    });
+  }
+},
                                 title: Text(
                                   item.title,
                                   style: Theme.of(context)

@@ -19,6 +19,9 @@ app.add_middleware(
 )
 
 
+
+
+
 class Item(BaseModel):
   id: int
   title: str
@@ -30,6 +33,8 @@ class ListModel(BaseModel):
   title: str
   items: List[Item] = []
 
+class ListUpdate(BaseModel):
+    title: str
 
 def load_data():
   if not DATA_FILE.exists():
@@ -91,6 +96,20 @@ def update_item(list_id: int, item_id: int, item: Item):
           save_data(data)
           return {"ok": True}
   raise HTTPException(status_code=404, detail="Item not found")
+
+
+
+@app.put("/lists/{list_id}")
+def update_list(list_id: int, payload: ListUpdate):
+    data = load_data()
+
+    for l in data["lists"]:
+        if l["id"] == list_id:
+            l["title"] = payload.title
+            save_data(data)
+            return {"ok": True}
+
+    raise HTTPException(status_code=404, detail="List not found")
 
 
 @app.delete("/lists/{list_id}/items/{item_id}")

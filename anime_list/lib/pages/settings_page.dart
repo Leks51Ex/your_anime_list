@@ -6,7 +6,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: Text('Настройки'),
+        child: Text('Тут будут настройки'),
     );
   }
 }
