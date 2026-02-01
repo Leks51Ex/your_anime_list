@@ -13,8 +13,6 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    # Для allow_origins=["*"] нельзя включать credentials (браузер блокирует).
-    # Нам cookies/авторизация не нужны, поэтому выключаем.
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
