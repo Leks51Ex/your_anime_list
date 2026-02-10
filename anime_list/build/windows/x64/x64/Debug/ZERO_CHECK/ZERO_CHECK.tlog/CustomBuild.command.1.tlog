@@ -1,0 +1,10 @@
+^C:\USERS\BULAT\YOUR_ANIME_LIST\ANIME_LIST\BUILD\WINDOWS\X64\CMAKEFILES\31E01009FDB22CB67E13462C7C70232C\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\Microsoft Visual Studio\18\Insiders\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -SC:/Users/Bulat/your_anime_list/anime_list/windows -BC:/Users/Bulat/your_anime_list/anime_list/build/windows/x64 --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Bulat/your_anime_list/anime_list/build/windows/x64/anime_list.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,9 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/Bulat/your_anime_list/anime_list/build/windows/x64/cmake_install.cmake",
+		"C:/Users/Bulat/your_anime_list/anime_list/build/windows/x64/flutter/cmake_install.cmake",
+		"C:/Users/Bulat/your_anime_list/anime_list/build/windows/x64/runner/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

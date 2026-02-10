@@ -1,0 +1,1 @@
+ C:\\Users\\Bulat\\your_anime_list\\anime_list\\.dart_tool\\flutter_build\\7ce9a37641b7011caa3c2be9995c62f2\\dart_build_result.json: 
