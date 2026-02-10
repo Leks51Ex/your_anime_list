@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
       return Icons.favorite;
     case 'star':
       return Icons.star;
+    case 'cafe':
+      return Icons.restaurant;
     case 'work':
       return Icons.work;
     case 'home':
@@ -32,6 +34,7 @@ String iconToString(IconData icon) {
   if (icon == Icons.book) return 'book';
   if (icon == Icons.movie) return 'movie';
   if (icon == Icons.pets) return 'pets';
+  if (icon == Icons.restaurant) return 'cafe';
   return 'list_rounded';
 }
 
@@ -383,6 +386,7 @@ class _AddListDialogState extends State<_AddListDialog> {
     Icons.book,
     Icons.movie,
     Icons.pets,
+    Icons.restaurant
   ];
 
 
