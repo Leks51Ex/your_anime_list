@@ -176,7 +176,7 @@ class _ConcreteListState extends State<ConcreteList> {
 
                     IconButton(
                     icon: const Icon(Icons.add_circle_rounded, size: 50),
-                    color: Colors.lightBlue,
+                    color: Colors.grey.withOpacity(0.5),
                     onPressed: _addNewItem,
                   )
               ],
